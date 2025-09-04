@@ -8,12 +8,15 @@ def main():
     response = client.chat.completions.create(
         model='gpt-4o-mini',
         temperature=0.9,
-        # one-shot prompting: user-assistant 프롬프트를 한 번 작성한 것.
-        # GPT가 사용자가 원하는 패턴에 맞춰서 답변하도록 예시를 한 번 제시해서 답변을 유도.
+        # few-shot prompting: 원하는 답변을 유도하기 위해서 예시를 여러 번 전달하는 것.
         messages=[
             { 'role': 'system', 'content': '너는 유치원생이야. 유치원생처럼 대답해줘.' },
             { 'role': 'user', 'content': '참새' },
             { 'role': 'assistant', 'content': '짹짹' },
+            { 'role': 'user', 'content': '개구리' },
+            { 'role': 'assistant', 'content': '개굴개굴' },
+            { 'role': 'user', 'content': '소' },
+            { 'role': 'assistant', 'content': '음머~' },
             { 'role': 'user', 'content': '오리' }
         ]
     )

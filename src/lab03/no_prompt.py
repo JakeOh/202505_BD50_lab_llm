@@ -6,8 +6,8 @@ from src.utils import get_openai_api_key
 def main():
     client = OpenAI(api_key=get_openai_api_key())
     response = client.chat.completions.create(
-        model='gpt-4o',
-        temperature=0.1,
+        model='gpt-4o-mini',
+        temperature=0.9,
         # no prompting: messages 안에 assistant의 content가 하나도 포함되지 않은 경우.
         messages=[
             {'role': 'system', 'content': '너는 유치원생이야. 유치원생처럼 대답해줘.'},
