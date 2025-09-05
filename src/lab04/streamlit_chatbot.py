@@ -1,7 +1,34 @@
 import streamlit as st
+from openai import OpenAI
+
+from src.utils import get_openai_api_key
+
+
+def initialize_client():
+    api_key = get_openai_api_key()
+    if not api_key:  # 환경 변수에서 OpenAI API 키를 가져오지 못하면
+        st.info('API 키가 없습니다.')
+        st.stop()  # streamlit 앱을 종료
+
+    # OpenAI 객체 생성
+    client = OpenAI(api_key=api_key)
+
+    return client
+
+
+def get_gpt_response(client, messages):
+    response = client.chat.completions.create(
+        model='gpt-4o-mini',
+        temperature=0.9,
+        messages=messages,
+    )
+
+    return response.choices[0].message.content
 
 
 def main():
+    client = initialize_client()  # OpenAI 클라이언트 객체 생성
+
     st.title('첫번째 챗봇')
 
     # st.session_state: streamlit 앱이 실행 중에 유지되어야 할 값을 저장하는 객체.
@@ -27,12 +54,14 @@ def main():
             'role': 'user', 'content': user_input
         })
 
+        answer = get_gpt_response(client, st.session_state.messages)
+
         # assistant의 답변을 출력.
-        st.chat_message('assistant').write(f'답변: {user_input}')
+        st.chat_message('assistant').write(answer)
 
         # session_state에 저장하고 있던 messages 리스트에 비서의 답변을 추가
         st.session_state.messages.append({
-            'role': 'assistant', 'content': f'답변: {user_input}'
+            'role': 'assistant', 'content': answer
         })
 
 
