@@ -28,9 +28,11 @@ def write_summary(filename, summary, mode='wt', encoding='utf-8'):
 
 def main():
     # 기사가 저장된 파일 이름과 경로
-    article_file = './data/AI_article.txt'
+    # article_file = './data/AI_article.txt'
+    article_file = './output/sample.txt'
     # GPT가 요약한 내용을 저장할 파일 이름과 경로
-    article_summary_file = './output/AI_article_summary.txt'
+    # article_summary_file = './output/AI_article_summary.txt'
+    article_summary_file = './output/sample_summary.txt'
 
     txt = file_to_txt(article_file)
     # print(txt)

@@ -12,6 +12,7 @@ def main():
         full_text = ''
         for page in document:
             full_text += page.get_text()
+            full_text += '\n\n' + '-' * 50 + '\n\n'
         print(full_text)
 
     with open(txt_file, mode='wt', encoding='utf-8') as f:
