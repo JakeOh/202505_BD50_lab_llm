@@ -1,3 +1,4 @@
+import json
 from openai import OpenAI
 
 from src.utils import get_openai_api_key
@@ -36,13 +37,14 @@ def main():
             # GPT에서 우리가 제공한 도구 목록 중에서 함수의 호출을 요청한 경우
             tool_call_id = tool_calls[0].id  # 도구 호출 첫번째 목록의 아이디
             function_name = tool_calls[0].function.name  # 도구 호출 첫번째 목록의 함수 이름
+            arguments = json.loads(tool_calls[0].function.arguments)  # 역직렬화: JSON 형식의 문자열 -> dict
             if function_name == 'get_current_time':
                 # 도구 목록의 함수를 호출해서 그 실행 결과를 메시지 프롬프트에 추가.
                 messages.append({
                     'role': 'function',
                     'tool_call_id': tool_call_id,
                     'name': function_name,
-                    'content': get_current_time(),  # 함수 호출 -> 리턴 값을 'content'에 저장.
+                    'content': get_current_time(arguments['timezone']),  # 함수 호출 -> 리턴 값을 'content'에 저장.
                 })
 
                 # 간혹 GPT가 불필요하게 도구 호출 요청을 반복하는 경우가 있음.

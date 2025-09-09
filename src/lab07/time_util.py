@@ -22,7 +22,7 @@ tools = [
                 'type': 'object',
                 'properties': {
                     'timezone': {'type': 'string',
-                                 'description': '현재 날짜와 시간을 반환할 시간대(예: Asia/Seoul)'},  # timezone 파라미터
+                                 'description': '현재 날짜와 시간을 반환하기 위한 시간대(예: Asia/Seoul)'},  # timezone 파라미터
                 },  # 파라미터들의 dict
                 'required': ['timezone'],  # parameters.properties 중에서 필수 파라미터의 목록.
             },  # 파라미터들에 대한 설명
