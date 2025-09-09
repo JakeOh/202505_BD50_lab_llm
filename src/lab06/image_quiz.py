@@ -48,10 +48,30 @@ def main():
     # OpenAI 객체 생성
     client = OpenAI(api_key=get_openai_api_key())
 
-    for g in glob('./images/*.jpg'):
+    text = ''  # 이미지 퀴즈들을 저장할 문자열 변수.
+
+    # ./images 폴더 안에 있는 모든 jpg 파일 이름을 하나씩 가져옴.
+    for i, g in enumerate(glob('./images/*.jpg')):
+        # i: 0, 1, 2, ...
+        # g: ./images 폴더의 jpg 파일 이름. (예) ./images/cafe1.jpg
         # 이미지 파일 하나씩 메시지 프롬프트를 만들어 GPT 요청을 보내고, 응답 내용(문제와 정답)을 출력.
-        quiz = make_image_quiz(client, g)
-        print(quiz)
+        try:
+            quiz = make_image_quiz(client, g)
+            print(quiz)
+            seperator = f'\n## 문제 {i + 1}\n'  # 문제 번호는 1부터 시작.
+            text += seperator
+            text += f'![image]({g})\n'  # 이미지를 md 파일에 추가
+            text += quiz + '\n'  # 퀴즈 문제와 정답을 추가
+        except Exception as e:
+            print(e)
+            continue  # 다음 jpg 이미지를 가져옴.
+
+
+    # md 파일에서는 '\n'이 줄바꿈으로 인식되지 않음. md 파일에서 줄바꿈을 사용하려면 '<br>' 태그를 사용해야 함.
+    text = text.replace('\n', '<br>')  # text에서 '\n'을 '<br>'로 변경.
+    # md 파일을 작성
+    with open(file='./image_quiz.md', mode='wt', encoding='utf-8') as f:
+        f.write(text)
 
 
 if __name__ == '__main__':
