@@ -45,7 +45,12 @@ def main():
                     'content': get_current_time(),  # 함수 호출 -> 리턴 값을 'content'에 저장.
                 })
 
+                # 간혹 GPT가 불필요하게 도구 호출 요청을 반복하는 경우가 있음.
+                # GPT의 이런 실수를 방지하기 위해서 system 프롬프트를 추가하는 트릭을 사용.
+                messages.append({'role': 'system', 'content': '주어진 결과로 답변을 만들어줘.'})
+
                 # 도구 호출 결과를 포함한 메시지 프롬프트를 사용해서 다시 GPT 요청을 보냄.
+                # -> 함수 호출 결과(function 역할의 content)를 사용한 답변을 생성해서 보낼 줄 것으로 예상.
                 response = get_gpt_response(client, messages)
                 print(response)
 
