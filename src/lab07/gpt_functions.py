@@ -53,15 +53,58 @@ tools = [
     },
 
     # get_yf_stock_info 정보
-    {},
+    {
+        'type': 'function',
+        'function': {
+            'name': 'get_yf_stock_info',
+            'description': 'Yahoo Finance 기업 정보를 반환.',
+            'parameters': {
+                'type': 'object',
+                'properties': {
+                    'ticker': {'type': 'string',
+                               'description': 'Yahoo Finance 기업 정보를 반환하기 위해 필요한 종목 ticker 문자열. (예: AAPL, AMZN)'}
+                },
+                'required': ['ticker']
+            }
+        }
+    },
 
     # get_yf_stock_history 정보
-    {},
+    {
+        'type': 'function',
+        'function': {
+            'name': 'get_yf_stock_history',
+            'description': 'Yahoo Finance에서 기업의 해당 기간 동안의 주가 정보(시가, 고가, 저가, 종가, 거래량, ...)를 반환.',
+            'parameters': {
+                'type': 'object',
+                'properties': {
+                    'ticker': {'type': 'string',
+                               'description': '주가 정보를 반환하기 위한 종목의 ticker 문자열. (예: AAPL, AMZN)'},
+                    'period': {'type': 'string',
+                               'description': '주가 정보를 조회할 기간. (예: 1d, 5d, 1mo, 1y)'}
+                },
+                'required': ['ticker', 'period']
+            }
+        }
+    },
 
     # get_yf_stock_recommendations 정보
-    {},
+    {
+        'type': 'function',
+        'function': {
+            'name': 'get_yf_stock_recommendations',
+            'description': 'Yahoo Finance의 해당 종목에 대한 애널리스트들의 추천 정보(매수, 매도, 유지, ...)를 반환.',
+            'parameters': {
+                'type': 'object',
+                'properties': {
+                    'ticker': {'type': 'string',
+                               'description': '애널리스트들의 추천 정보를 조회하기 위한 종목 ticker 문자열. (예: AAPL, AMZN)'},
+                },
+                'required': ['ticker']
+            }
+        }
+    },
 ]
-
 
 
 if __name__ == '__main__':

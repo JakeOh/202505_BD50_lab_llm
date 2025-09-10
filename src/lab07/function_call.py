@@ -3,6 +3,7 @@ from openai import OpenAI
 
 from src.utils import get_openai_api_key
 from src.lab07.gpt_functions import tools, get_current_time
+from src.lab07.gpt_functions import get_yf_stock_info, get_yf_stock_history, get_yf_stock_recommendations
 
 
 def get_gpt_response(client, messages):
@@ -42,13 +43,21 @@ def main():
                 arguments = json.loads(tool_call.function.arguments)  # 함수를 호출할 때 필요한 아규먼트들.
                 # get_current_time 함수 호출을 요청한 경우
                 if function_name == 'get_current_time':
-                    # 도구 목록의 함수를 호출해서 그 실행 결과를 메시지 프롬프트에 추가.
-                    messages.append({
-                        'role': 'function',
-                        'tool_call_id': tool_call_id,
-                        'name': function_name,
-                        'content': get_current_time(arguments['timezone']),  # 함수 호출 -> 리턴 값을 'content'에 저장.
-                    })
+                    function_result = get_current_time(arguments['timezone'])  # 함수 호출 결과를 저장
+                elif function_name == 'get_yf_stock_info':
+                    function_result = get_yf_stock_info(arguments['ticker'])
+                elif function_name == 'get_yf_stock_history':
+                    function_result = get_yf_stock_history(arguments['ticker'], arguments['period'])
+                elif function_name == 'get_yf_stock_recommendations':
+                    function_result = get_yf_stock_recommendations(arguments['ticker'])
+
+                # 도구 목록의 함수를 호출해서 그 실행 결과를 메시지 프롬프트에 추가.
+                messages.append({
+                    'role': 'function',
+                    'tool_call_id': tool_call_id,
+                    'name': function_name,
+                    'content': function_result,  # 함수 호출 -> 리턴 값을 'content'에 저장.
+                })
 
             # 간혹 GPT가 불필요하게 도구 호출 요청을 반복하는 경우가 있음.
             # GPT의 이런 실수를 방지하기 위해서 system 프롬프트를 추가하는 트릭을 사용.
