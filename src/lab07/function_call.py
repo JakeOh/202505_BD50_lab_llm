@@ -2,7 +2,7 @@ import json
 from openai import OpenAI
 
 from src.utils import get_openai_api_key
-from src.lab07.time_util import tools, get_current_time
+from src.lab07.gpt_functions import tools, get_current_time
 
 
 def get_gpt_response(client, messages):
