@@ -27,7 +27,7 @@ tools = [
                 'required': ['timezone'],  # parameters.properties 중에서 필수 파라미터의 목록.
             },  # 파라미터들에 대한 설명
         }  # 함수 설명
-    }
+    },
 ]
 
 
