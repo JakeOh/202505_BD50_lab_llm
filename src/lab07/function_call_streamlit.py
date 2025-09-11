@@ -1,4 +1,5 @@
 import json
+from collections import defaultdict
 
 import streamlit as st
 from openai import OpenAI
@@ -25,6 +26,26 @@ def get_gpt_response(client, messages):
     # return 대신 yield를 사용함.
     for chunk in response:
         yield chunk
+
+
+def delta_tool_calls_to_obj(tools):
+    tools_dict = defaultdict(lambda: {'id': None,
+                                      'function': {'arguments': '', 'name': None},
+                                      'type': None})
+    for tool in tools:
+        # function calling 아이디, 함수 이름, 타입('function')은 첫번째 청크에서만 값이 있기 때문에.
+        if tool.id is not None:
+            tools_dict[tool.index]['id'] = tool.id
+        if tool.function.name is not None:
+            tools_dict[tool.index]['function']['name'] = tool.function.name
+        if tool.type is not None:
+            tools_dict[tool.index]['type'] = tool.type
+        # 파편화된(조각난) 아규먼트(문자열)들을 합쳐서 아규먼트 문자열을 JSON 형식으로 완성.
+        tools_dict[tool.index]['function']['arguments'] += tool.function.arguments
+
+    tools_dict_list = list(tools_dict.values())
+
+    return {'tool_calls': tools_dict_list}
 
 
 def main():
@@ -58,6 +79,7 @@ def main():
         # mylog(response)  #> response: generator 객체.
 
         content = ''  # chunk(답변 조각) 안에 content들을 합쳐서 저장하기 위한 문자열 변수.
+        delta_tool_calls = []  # ChoiceDeltaToolCall 객체들을 저장하기 위한 리스트.
         with st.chat_message('assistant').empty():  # 비어있는 assistant 채팅 메시지를 만듦.
             for chunk in response:  # generator를 iteration함.
                 mylog(chunk)  #> generator는 ChatCompletionChunk 객체를 반환.
@@ -68,19 +90,20 @@ def main():
                     content += delta_content  # iteration을 할 때마다 그때까지 합쳐진 컨텐트를
                     st.markdown(content)  # 비어있었던 assistant 채팅 창에 마카다운 형식으로 텍스트를 채움.
 
-                tool_calls = chunk_delta.tool_calls  #> list
-                if tool_calls:  # 청크에서 도구 호출이 있으면
-                    pass
+                if chunk_delta.tool_calls:  # 청크에서 도구 호출이 있으면
+                    delta_tool_calls.extend(chunk_delta.tool_calls)
 
-        gpt_message = response.choices[0].message
+        # 파편화된 도구 호출 목록을 합침.
+        tool_obj= delta_tool_calls_to_obj(delta_tool_calls)
+        mylog(tool_obj)
 
-        tool_calls = gpt_message.tool_calls  # function calling list
+        tool_calls = tool_obj['tool_calls']  # function calling list
         # if tool_calls is not null:
         if tool_calls:  # GPT가 (클라이언트에서 제공한 도구 목록 중에서) 함수 호출이 필요하다고 판단했을 때
             for tool in tool_calls:
-                tool_id = tool.id
-                function_name = tool.function.name
-                arguments = json.loads(tool.function.arguments)  # JSON 문자열 -> dict
+                tool_id = tool['id']
+                function_name = tool['function']['name']
+                arguments = json.loads(tool['function']['arguments'])  # JSON 문자열 -> dict
 
                 # GPT에서 필요로 하는 함수를 호출해서 결과값을 반환받음.
                 function_result = None
@@ -107,12 +130,18 @@ def main():
             # 함수 호출을 요청한 GPT에게 함수 호출 결과를 메시지로 보냄.
             response = get_gpt_response(client, st.session_state.messages)
             mylog(response)
-            gpt_message = response.choices[0].message
+            content = ''
+            with st.chat_message('assistant').empty():
+                for chunk in response:
+                    chunk_delta = chunk.choices[0].delta
+                    delta_content = chunk_delta.content
+                    if delta_content:
+                        content += delta_content
+                        st.markdown(content)
 
         # assistant 메시지를 session_state의 messages 리스트에 추가
-        st.session_state.messages.append({'role': 'assistant', 'content': gpt_message.content})
-        # assistant 메시지를 화면 출력
-        st.chat_message('assistant').write(gpt_message.content)
+        st.session_state.messages.append({'role': 'assistant', 'content': content})
+
 
 
 if __name__ == '__main__':
