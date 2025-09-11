@@ -19,6 +19,7 @@ def get_gpt_response(client, messages):
         model='gpt-4o-mini',
         messages=messages,
         tools=tools,  # GPT가 호출할 수 있는 도구 목록
+        # stream=True,
     )
     return response
 
