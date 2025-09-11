@@ -1,3 +1,5 @@
+import json
+
 import streamlit as st
 from openai import OpenAI
 
@@ -46,6 +48,50 @@ def main():
 
         # 사용자의 입력 내용을 화면에 출력
         st.chat_message('user').write(user_input)
+
+        # GPT chat.completion 요청을 보냄.
+        response = get_gpt_response(client, st.session_state.messages)
+        mylog(response)
+        gpt_message = response.choices[0].message
+
+        tool_calls = gpt_message.tool_calls  # function calling list
+        # if tool_calls is not null:
+        if tool_calls:  # GPT가 (클라이언트에서 제공한 도구 목록 중에서) 함수 호출이 필요하다고 판단했을 때
+            for tool in tool_calls:
+                tool_id = tool.id
+                function_name = tool.function.name
+                arguments = json.loads(tool.function.arguments)  # JSON 문자열 -> dict
+
+                # GPT에서 필요로 하는 함수를 호출해서 결과값을 반환받음.
+                function_result = None
+                if function_name == 'get_current_time':
+                    function_result = get_current_time(arguments['timezone'])
+                elif function_name == 'get_yf_stock_info':
+                    function_result = get_yf_stock_info(arguments['ticker'])
+                elif function_name == 'get_yf_stock_history':
+                    function_result = get_yf_stock_history(arguments['ticker'], arguments['period'])
+                elif function_name == 'get_yf_stock_recommendations':
+                    function_result = get_yf_stock_recommendations(arguments['ticker'])
+
+                # session_state의 messages 리스트에서 'function' 역할(role)의 메시지를 추가
+                st.session_state.messages.append({
+                    'role': 'function',
+                    'tool_call_id': tool_id,
+                    'name': function_name,
+                    'content': function_result,
+                })
+
+            # 반복문(for-in)이 끝난 다음에, function 메시지들이 모두 append된 다음에,
+            st.session_state.messages.append({'role': 'system', 'content': '주어진 결과를 바탕으로 답변을 생성해줘.'})
+
+            # 함수 호출을 요청한 GPT에게 함수 호출 결과를 메시지로 보냄.
+            gpt_response = get_gpt_response(client, st.session_state.messages)
+            mylog(gpt_response)
+
+        # assistant 메시지를 session_state의 messages 리스트에 추가
+        st.session_state.messages.append({'role': 'assistant', 'content': gpt_message.content})
+        # assistant 메시지를 화면 출력
+        st.chat_message('assistant').write(gpt_message.content)
 
 
 if __name__ == '__main__':
