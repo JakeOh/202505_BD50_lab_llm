@@ -19,9 +19,10 @@ def get_gpt_response(client, messages):
         model='gpt-4o-mini',
         messages=messages,
         tools=tools,  # GPT가 호출할 수 있는 도구 목록
-        # stream=True,
+        stream=True,
     )
-    return response
+    for chunk in response:
+        yield chunk
 
 
 def main():
@@ -52,7 +53,10 @@ def main():
 
         # GPT chat.completion 요청을 보냄.
         response = get_gpt_response(client, st.session_state.messages)
-        mylog(response)
+        # mylog(response)  #> response: generator 객체.
+        for chunk in response:
+            mylog(chunk)  #> generator는 ChatCompletionChunk 객체를 반환.
+
         gpt_message = response.choices[0].message
 
         tool_calls = gpt_message.tool_calls  # function calling list
