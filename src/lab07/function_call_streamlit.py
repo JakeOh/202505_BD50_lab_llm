@@ -21,6 +21,8 @@ def get_gpt_response(client, messages):
         tools=tools,  # GPT가 호출할 수 있는 도구 목록
         stream=True,
     )
+    # stream=True로 설정한 경우, GPT 응답은 generator 패턴(반복iteration을 할 때마다 순서대로 반환)으로 작성해야 함.
+    # return 대신 yield를 사용함.
     for chunk in response:
         yield chunk
 
@@ -54,8 +56,21 @@ def main():
         # GPT chat.completion 요청을 보냄.
         response = get_gpt_response(client, st.session_state.messages)
         # mylog(response)  #> response: generator 객체.
-        for chunk in response:
-            mylog(chunk)  #> generator는 ChatCompletionChunk 객체를 반환.
+
+        content = ''  # chunk(답변 조각) 안에 content들을 합쳐서 저장하기 위한 문자열 변수.
+        with st.chat_message('assistant').empty():  # 비어있는 assistant 채팅 메시지를 만듦.
+            for chunk in response:  # generator를 iteration함.
+                mylog(chunk)  #> generator는 ChatCompletionChunk 객체를 반환.
+                chunk_delta = chunk.choices[0].delta  #> ChoiceDelta 객체
+
+                delta_content = chunk_delta.content  #> str
+                if delta_content:  # 답변 조각이 있으면
+                    content += delta_content  # iteration을 할 때마다 그때까지 합쳐진 컨텐트를
+                    st.markdown(content)  # 비어있었던 assistant 채팅 창에 마카다운 형식으로 텍스트를 채움.
+
+                tool_calls = chunk_delta.tool_calls  #> list
+                if tool_calls:  # 청크에서 도구 호출이 있으면
+                    pass
 
         gpt_message = response.choices[0].message
 
