@@ -85,8 +85,9 @@ def main():
             st.session_state.messages.append({'role': 'system', 'content': '주어진 결과를 바탕으로 답변을 생성해줘.'})
 
             # 함수 호출을 요청한 GPT에게 함수 호출 결과를 메시지로 보냄.
-            gpt_response = get_gpt_response(client, st.session_state.messages)
-            mylog(gpt_response)
+            response = get_gpt_response(client, st.session_state.messages)
+            mylog(response)
+            gpt_message = response.choices[0].message
 
         # assistant 메시지를 session_state의 messages 리스트에 추가
         st.session_state.messages.append({'role': 'assistant', 'content': gpt_message.content})
