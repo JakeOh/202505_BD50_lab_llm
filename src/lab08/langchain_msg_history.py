@@ -37,8 +37,16 @@ def main():
         if user_input == 'exit':
             break
 
-        ai_message = runnable.invoke(input=user_input, config=config)
-        print(ai_message.content)
+        # AI가 생성한 답변을 한꺼번에 받아서 출력.
+        # ai_message = runnable.invoke(input=user_input, config=config)
+        # print('AI>', ai_message.content)
+
+        # AI의 답변을 스트리밍 방식으로 출력.
+        ai_stream = runnable.stream(input=user_input, config=config)
+        for msg in ai_stream:
+            print(msg.content, end='')
+        print()
+
 
 
 if __name__ == '__main__':
