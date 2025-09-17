@@ -19,6 +19,7 @@ def get_ai_response(model, messages):
         else:
             gathered += chunk
 
+    print('gathered:', gathered)
     # AI 응답에 content가 없고 tool_calls가 포함된 경우.
     if gathered.tool_calls:
         # 채팅 이력(messages)에 도구 호출을 요청하는 AI 메시지를 추가.
@@ -73,9 +74,11 @@ def main():
 
         # GPT에게 질문을 함.
         response = get_ai_response(model_with_tools, st.session_state.messages)
+        print('response:', response)
 
         # write_stream: generator 타입 객체를 반복하면서 타이핑하듯이 화면에 출력하고, 출력 완료된 문자열를 리턴.
         ai_answer = st.chat_message('assistant').write_stream(response)
+        print('ai_answer:', ai_answer)
 
         # AI의 답변을 다음 질문의 맥락에서 사용하기 위해서 대화 내용을 저장.
         st.session_state.messages.append(AIMessage(content=ai_answer))
